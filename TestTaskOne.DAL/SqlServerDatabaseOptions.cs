@@ -14,6 +14,11 @@ public class SqlServerDatabaseOptions : IOptions<SqlServerDatabaseOptions>
 
 	public SqlServerDatabaseOptions Value => this;
 
+	public static readonly SqlServerDatabaseOptions Default = new()
+	{
+		DatabaseName = "TestTaskDb",
+	};
+
 	public string BuildConnectionString()
 	{
 		var builder = new StringBuilder();
