@@ -36,8 +36,8 @@ internal static class Extensions
 				return SqlServerDatabaseOptions.Default;
 			}
 
-			using var reader = new StreamReader(databaseConfigFile);
-			var config = JsonSerializer.Deserialize<DatabaseConfig>(reader.ReadToEnd()) ?? throw new InvalidOperationException("Deserialized object was equal to null.");
+			using var stream = File.OpenRead(databaseConfigFile);
+			var config = JsonSerializer.Deserialize<DatabaseConfig>(stream) ?? throw new InvalidOperationException("Deserialized object was equal to null.");
 			return new SqlServerDatabaseOptions
 			{
 				DatabaseName = config.DatabaseName,
