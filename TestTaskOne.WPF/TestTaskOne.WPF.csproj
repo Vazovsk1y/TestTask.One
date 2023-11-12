@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ViewModels\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\TestTaskOne.DAL\TestTaskOne.DAL.csproj" />
   </ItemGroup>
 

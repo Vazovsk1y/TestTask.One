@@ -1,0 +1,14 @@
+﻿<UserControl x:Class="TestTaskOne.WPF.Controls.StatusBarPanelControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TestTaskOne.WPF.Controls" 
+             xmlns:viewmodels="clr-namespace:TestTaskOne.WPF.ViewModels" 
+             d:DataContext="{d:DesignInstance Type=viewmodels:StatusBarPanelViewModel}"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <StatusBar>
+        <TextBlock Text="{Binding DatabaseOptions.DatabaseName, StringFormat='Подключенная БД: {0}'}"/>
+    </StatusBar>
+</UserControl>

@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using TestTaskOne.DAL;
 using System.Text.Json;
+using TestTaskOne.WPF.ViewModels;
 
 namespace TestTaskOne.WPF;
 
@@ -27,16 +28,22 @@ internal static class Extensions
 	}
 
 	public static IServiceCollection AddWPF(this IServiceCollection services) => services
-		.AddSingleton<MainWindow>()
+		.AddSingleton(e =>
+		{
+			var viewModel = e.GetRequiredService<MainWindowViewModel>();
+			return new MainWindow { DataContext = viewModel };
+		})
+		.AddSingleton<MainWindowViewModel>()
+		.AddSingleton<StatusBarPanelViewModel>()
+		.AddSingleton<MenuPanelViewModel>()
 		.AddSingleton<IOptions<SqlServerDatabaseOptions>, SqlServerDatabaseOptions>(e =>
 		{
-			string databaseConfigFile = Path.Combine(App.AssociatedFolderInAppDataPath, DatabaseConfig.FileName);
-			if (!File.Exists(databaseConfigFile))
+			if (!File.Exists(DatabaseConfig.Path))
 			{
 				return SqlServerDatabaseOptions.Default;
 			}
 
-			using var stream = File.OpenRead(databaseConfigFile);
+			using var stream = File.OpenRead(DatabaseConfig.Path);
 			var config = JsonSerializer.Deserialize<DatabaseConfig>(stream) ?? throw new InvalidOperationException("Deserialized object was equal to null.");
 			return new SqlServerDatabaseOptions
 			{
@@ -49,7 +56,7 @@ internal static class Extensions
 
 internal class DatabaseConfig
 {
-	public const string FileName = "databaseConfig.json";
+	public static readonly string Path = System.IO.Path.Combine(App.AssociatedFolderInAppDataPath, "databaseConfig.json");
 	public string? UserName { get; set; }
 
 	public string? Password { get; set; }
