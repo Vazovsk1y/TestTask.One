@@ -94,7 +94,7 @@ public partial class App : Application
 
 		if (ConfiguredDatabaseOptions)
 		{
-			ConnectedToDatabase = TestTaskContext.CanConnect(options.Value.BuildConnectionString());
+			ConnectedToDatabase = TestTaskContext.CanConnect(options.Value.BuildConnectionString()!);
 		}
 
 		Services.GetRequiredService<MainWindow>().Show();

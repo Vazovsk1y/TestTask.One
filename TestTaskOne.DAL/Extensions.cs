@@ -111,8 +111,11 @@ public static class Extensions
 			.AddDbContext<TestTaskContext>((provider, options) =>
 			{
 				var databaseOptions = provider.GetRequiredService<IOptions<SqlServerDatabaseOptions>>();
-				string connectionString = databaseOptions.Value.BuildConnectionString();
-				options.UseSqlServer(connectionString);
+				if (databaseOptions.Value != SqlServerDatabaseOptions.Undefined)
+				{
+					string? connectionString = databaseOptions.Value.BuildConnectionString();
+					options.UseSqlServer(connectionString);
+				}
 			})
 		;
 

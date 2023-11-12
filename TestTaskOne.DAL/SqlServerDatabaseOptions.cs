@@ -26,8 +26,13 @@ public record SqlServerDatabaseOptions : IOptions<SqlServerDatabaseOptions>
 		UserName = userName;
 	}
 
-	public string BuildConnectionString()
+	public string? BuildConnectionString()
 	{
+		if (this == Undefined)
+		{
+			return null;
+		}
+
 		var builder = new StringBuilder();
 		builder.Append(Server);
 		builder.Append($"Database = {DatabaseName};");
