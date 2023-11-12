@@ -9,8 +9,8 @@ public class DesignTimeContextFactory : IDesignTimeDbContextFactory<TestTaskCont
 	public TestTaskContext CreateDbContext(string[] args)
 	{
 		var optionsBuilder = new DbContextOptionsBuilder();
-		var designTimeDatabase = new SqlServerDatabaseOptions { DatabaseName = "TestTaskDb" };
-		optionsBuilder.UseSqlServer(designTimeDatabase.BuildConnectionString());
+		var designTimeOptions = new SqlServerDatabaseOptions("TestTaskDb");
+		optionsBuilder.UseSqlServer(designTimeOptions.BuildConnectionString());
 		return new TestTaskContext(optionsBuilder.Options);
 	}
 }

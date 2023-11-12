@@ -34,6 +34,8 @@ public partial class App : Application
 
 	public static bool ConnectedToDatabase { get; private set; } = false;
 
+	public static bool ConfiguredDatabaseOptions { get; private set; } = false;
+
 	public static IServiceProvider Services => Host.Services;
 
 	public static IHost Host => _host ??= Program.CreateHostBuilder(Environment.GetCommandLineArgs()).Build();
@@ -87,22 +89,15 @@ public partial class App : Application
 		base.OnStartup(e);
 		Host.Start();
 
-		ConnectedToDatabase = TryToConnectDatabase();
-		Services.GetRequiredService<MainWindow>().Show();
-	}
-
-	private static bool TryToConnectDatabase()
-	{
 		var options = Services.GetRequiredService<IOptions<SqlServerDatabaseOptions>>();
-		bool canConnect = TestTaskContext.CanConnect(options.Value.BuildConnectionString());
+		ConfiguredDatabaseOptions = options.Value != SqlServerDatabaseOptions.Undefined;
 
-        if (!canConnect)
-        {
-			var logger = Services.GetRequiredService<ILogger<App>>();
-			logger.LogWarning("Application wasnt connected to the configured database.");
+		if (ConfiguredDatabaseOptions)
+		{
+			ConnectedToDatabase = TestTaskContext.CanConnect(options.Value.BuildConnectionString());
 		}
 
-        return canConnect;
+		Services.GetRequiredService<MainWindow>().Show();
 	}
 
 	#endregion

@@ -3,21 +3,28 @@ using System.Text;
 
 namespace TestTaskOne.DAL;
 
-public class SqlServerDatabaseOptions : IOptions<SqlServerDatabaseOptions>
+public record SqlServerDatabaseOptions : IOptions<SqlServerDatabaseOptions>
 {
 	public const string Server = "Server = (localdb)\\MSSQLLocalDB;";
-	public string? UserName { get; set; }
+	public string? UserName { get; init; }
 
-	public string? Password { get; set; }
+	public string? Password { get; init; }
 
-	public required string DatabaseName { get; set; }
+	public string? DatabaseName { get; init; }
 
 	public SqlServerDatabaseOptions Value => this;
 
-	public static readonly SqlServerDatabaseOptions Default = new()
+	public static readonly SqlServerDatabaseOptions Undefined = new() { DatabaseName = null, Password = null, UserName = null };
+
+	private SqlServerDatabaseOptions() { }
+
+	public SqlServerDatabaseOptions(string databaseName, string? password = null, string? userName = null)
 	{
-		DatabaseName = "TestTaskDb",
-	};
+		ArgumentException.ThrowIfNullOrEmpty(databaseName, nameof(databaseName));
+		DatabaseName = databaseName;
+		Password = password;
+		UserName = userName;
+	}
 
 	public string BuildConnectionString()
 	{

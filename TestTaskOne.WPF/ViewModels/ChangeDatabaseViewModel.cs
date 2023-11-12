@@ -39,13 +39,7 @@ internal partial class ChangeDatabaseViewModel : ObservableObject
 	[RelayCommand(CanExecute = nameof(OnCanAccept))]
 	private void Accept()
 	{
-		var options = new SqlServerDatabaseOptions
-		{
-			DatabaseName = DatabaseName,
-			UserName = UserName,
-			Password = Password,
-		};
-
+		var options = new SqlServerDatabaseOptions (DatabaseName, Password, UserName);
 		var connectionString = options.BuildConnectionString();
 		bool canConnect = TestTaskContext.CanConnect(connectionString);
 		if (canConnect)

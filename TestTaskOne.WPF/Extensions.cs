@@ -49,17 +49,13 @@ internal static class Extensions
 		{
 			if (!File.Exists(DatabaseConfig.Path))
 			{
-				return SqlServerDatabaseOptions.Default;
+				return SqlServerDatabaseOptions.Undefined;
 			}
 
 			using var stream = File.OpenRead(DatabaseConfig.Path);
 			var config = JsonSerializer.Deserialize<DatabaseConfig>(stream) ?? throw new InvalidOperationException("Deserialized object was equal to null.");
-			return new SqlServerDatabaseOptions
-			{
-				DatabaseName = config.DatabaseName,
-				Password = config.Password,
-				UserName = config.UserName,
-			};
+
+			return new SqlServerDatabaseOptions(config.DatabaseName, config.Password, config.UserName);
 		});
 }
 

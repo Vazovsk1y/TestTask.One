@@ -19,8 +19,13 @@ internal partial class StatusBarPanelViewModel : ObservableRecipient
 	{
 		base.OnActivated();
 
-		bool canConnect = TestTaskContext.CanConnect(_databaseOptions.BuildConnectionString());
-		if (canConnect)
+		if (!App.ConfiguredDatabaseOptions)
+		{
+			ConnectionMessage = "Параметры для подключения не были определены.";
+			return;
+		}
+
+		if (App.ConnectedToDatabase)
 		{
 			ConnectionMessage = $"Подлюченная БД: {_databaseOptions.DatabaseName}";
 		}
