@@ -6,6 +6,8 @@ using Microsoft.Extensions.Options;
 using TestTaskOne.DAL;
 using System.Text.Json;
 using TestTaskOne.WPF.ViewModels;
+using TestTaskOne.WPF.Windows;
+using TestTaskOne.WPF.Infrastructure;
 
 namespace TestTaskOne.WPF;
 
@@ -33,9 +35,16 @@ internal static class Extensions
 			var viewModel = e.GetRequiredService<MainWindowViewModel>();
 			return new MainWindow { DataContext = viewModel };
 		})
+		.AddTransient(e =>
+		{
+			var viewModel = e.GetRequiredService<ChangeDatabaseViewModel>();
+			return new ChangeDatabaseWindow { DataContext = viewModel };
+		})
 		.AddSingleton<MainWindowViewModel>()
 		.AddSingleton<StatusBarPanelViewModel>()
 		.AddSingleton<MenuPanelViewModel>()
+		.AddScoped<ChangeDatabaseViewModel>()
+		.AddSingleton(typeof(IUserDialog<>), typeof(BaseUserDialogService<>))
 		.AddSingleton<IOptions<SqlServerDatabaseOptions>, SqlServerDatabaseOptions>(e =>
 		{
 			if (!File.Exists(DatabaseConfig.Path))

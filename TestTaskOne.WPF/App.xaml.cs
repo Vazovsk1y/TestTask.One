@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using TestTaskOne.DAL;
+using TestTaskOne.WPF.Windows;
 
 namespace TestTaskOne.WPF;
 
@@ -30,6 +31,8 @@ public partial class App : Application
 	public static string AssociatedFolderInAppDataPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), CompanyName, Name);
 
 	public static bool IsDesignMode { get; private set; } = true;
+
+	public static bool ConnectedToDatabase { get; private set; } = false;
 
 	public static IServiceProvider Services => Host.Services;
 
@@ -84,16 +87,22 @@ public partial class App : Application
 		base.OnStartup(e);
 		Host.Start();
 
-		InitializeDefaultDatabase();
+		ConnectedToDatabase = TryToConnectDatabase();
 		Services.GetRequiredService<MainWindow>().Show();
 	}
 
-	private static void InitializeDefaultDatabase()
+	private static bool TryToConnectDatabase()
 	{
-		using var scope = Services.CreateScope();
-		var context = scope.ServiceProvider.GetRequiredService<TestTaskContext>();
+		var options = Services.GetRequiredService<IOptions<SqlServerDatabaseOptions>>();
+		bool canConnect = TestTaskContext.CanConnect(options.Value.BuildConnectionString());
 
-		context.Database.Migrate();
+        if (!canConnect)
+        {
+			var logger = Services.GetRequiredService<ILogger<App>>();
+			logger.LogWarning("Application wasnt connected to the configured database.");
+		}
+
+        return canConnect;
 	}
 
 	#endregion

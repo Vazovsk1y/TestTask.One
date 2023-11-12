@@ -14,5 +14,7 @@ internal partial class MainWindowViewModel : ObservableObject
 	{
 		StatusBarPanelViewModel = statusBarPanelViewModel;
 		MenuPanelViewModel = menuPanelViewModel;
+
+		StatusBarPanelViewModel.IsActive = true;
 	}
 }

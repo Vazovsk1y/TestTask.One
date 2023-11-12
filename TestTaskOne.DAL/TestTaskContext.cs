@@ -31,4 +31,12 @@ public class TestTaskContext : DbContext
 
 		modelBuilder.Seed();
 	}
+	public static bool CanConnect(string connectionString)
+	{
+		var optionsBuilder = new DbContextOptionsBuilder<TestTaskContext>()
+			.UseSqlServer(connectionString);
+
+		using var dbContext = new TestTaskContext(optionsBuilder.Options);
+		return dbContext.Database.CanConnect();
+	}
 }

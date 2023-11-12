@@ -86,7 +86,7 @@ public static class Extensions
 			var waybill = new Waybill()
 			{
 				PurchaseCost = random.Next(1000, 10000),
-				PurchaseDate = new DateTime(currentYear, random.Next(1, 12), random.Next(1, 31), random.Next(1, 23), random.Next(1, 60), random.Next(1, 60))
+				PurchaseDate = new DateTime(currentYear, random.Next(1, 12), random.Next(1, 28), random.Next(1, 23), random.Next(1, 60), random.Next(1, 60))
 			};
 			waybillsItems.Add(new WaybillItem { NomenclatureId = components[0].Id, WaybillId = waybill.Id });
 			waybillsItems.Add(new WaybillItem { NomenclatureId = components[1].Id, WaybillId = waybill.Id });

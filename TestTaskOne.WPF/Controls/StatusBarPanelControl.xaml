@@ -9,6 +9,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <StatusBar>
-        <TextBlock Text="{Binding DatabaseOptions.DatabaseName, StringFormat='Подключенная БД: {0}'}"/>
+        <TextBlock Text="{Binding ConnectionMessage}"/>
     </StatusBar>
 </UserControl>
