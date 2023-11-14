@@ -8,6 +8,7 @@ using System.Text.Json;
 using TestTaskOne.WPF.ViewModels;
 using TestTaskOne.WPF.Windows;
 using TestTaskOne.WPF.Infrastructure;
+using TestTaskOne.WPF.ViewModels.Entities;
 
 namespace TestTaskOne.WPF;
 
@@ -43,6 +44,7 @@ internal static class Extensions
 		.AddSingleton<MainWindowViewModel>()
 		.AddSingleton<StatusBarPanelViewModel>()
 		.AddSingleton<MenuPanelViewModel>()
+		.AddSingleton<WorkPanelViewModel>()
 		.AddScoped<ChangeDatabaseViewModel>()
 		.AddSingleton(typeof(IUserDialog<>), typeof(BaseUserDialogService<>))
 		.AddSingleton<IOptions<SqlServerDatabaseOptions>, SqlServerDatabaseOptions>(e =>
@@ -56,7 +58,11 @@ internal static class Extensions
 			var config = JsonSerializer.Deserialize<DatabaseConfig>(stream) ?? throw new InvalidOperationException("Deserialized object was equal to null.");
 
 			return new SqlServerDatabaseOptions(config.DatabaseName, config.Password, config.UserName);
-		});
+		})
+		.AddSingleton<ITableViewModel, ComponentsTable>()
+		.AddSingleton<ITableViewModel, MaterialsTable>()
+		.AddSingleton<ITableViewModel, ProductsTable>()
+		.AddSingleton<ITableViewModel, WaybillsTable>();
 }
 
 internal class DatabaseConfig

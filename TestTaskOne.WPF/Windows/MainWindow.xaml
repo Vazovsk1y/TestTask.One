@@ -16,8 +16,7 @@
         <controls:StatusBarPanelControl DataContext="{Binding StatusBarPanelViewModel}"
                                         DockPanel.Dock="Bottom"/>
 
-        <Grid>
-            <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="Main content"/>
-        </Grid>
+        <controls:WorkPanelControl DataContext="{Binding WorkPanelViewModel}"
+                                   />
     </DockPanel>
 </Window>

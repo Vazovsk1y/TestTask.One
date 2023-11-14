@@ -41,8 +41,8 @@ internal partial class ChangeDatabaseViewModel : ObservableObject
 	{
 		var options = new SqlServerDatabaseOptions (DatabaseName, Password, UserName);
 		var connectionString = options.BuildConnectionString();
-		bool canConnect = TestTaskContext.CanConnect(connectionString);
-		if (canConnect)
+		bool canConnect = TestTaskContext.CanConnect(connectionString!);
+		if (!canConnect)
 		{
 			MessageBox.Show($"Connection to {DatabaseName} failed.", "Fail", MessageBoxButton.OK, MessageBoxImage.Error);
 			_userDialog.CloseDialog();
@@ -50,7 +50,7 @@ internal partial class ChangeDatabaseViewModel : ObservableObject
 		}
 
 		using var writer = new StreamWriter(DatabaseConfig.Path);
-		var config = new DatabaseConfig { DatabaseName = options.DatabaseName, Password = options.Password, UserName = options.UserName };
+		var config = new DatabaseConfig { DatabaseName = options.DatabaseName!, Password = options.Password, UserName = options.UserName };
 		string json = JsonSerializer.Serialize(config);
 		writer.Write(json);
 		MessageBox.Show($"Restart the application to reconnect to new database.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
