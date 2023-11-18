@@ -9,6 +9,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Menu>
+        <MenuItem Header="File">
+            <MenuItem Header="Save in docx" Command="{Binding SaveInDocxCommand}"/>
+        </MenuItem>
         <MenuItem Header="Settings">
             <MenuItem Header="Change database" Command="{Binding ChangeDatabaseCommand}"/>
         </MenuItem>

@@ -1,7 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using TestTaskOne.Core.Models;
+using DocumentFormat.OpenXml.Wordprocessing;
+using static TestTaskOne.DAL.DocxModels;
 
 namespace TestTaskOne.DAL;
 
@@ -121,4 +125,151 @@ public static class Extensions
 
 		return services;
 	}
+
+	public static async Task SaveInDocxAsync(this TestTaskContext context, string docxFileFolder, DocxDocumentOptions docxDocumentOptions, CancellationToken cancellationToken = default)
+	{
+		string fileName = $"summary - {Guid.NewGuid()}.docx";
+		string filePath = Path.Combine(docxFileFolder, fileName);
+
+		using var docxFile = WordprocessingDocument.Create(filePath, WordprocessingDocumentType.Document);
+		var mainPart = docxFile.AddMainDocumentPart();
+		var document = new Document();
+		mainPart.Document = document;
+
+		var body = new Body();
+		var componentsTable = CreateTable<ComponentDocxModel>(body, nameof(TestTaskContext.Components), docxDocumentOptions);
+		body.Append(componentsTable.tableTitle);
+		var componentsTableModels = await context
+			.Components
+			.Select(e => new ComponentDocxModel { Title = e.Title }).ToListAsync(cancellationToken);
+
+		FillTable(componentsTable.table, componentsTableModels, docxDocumentOptions);
+		body.Append(componentsTable.table);
+
+		var materialsTable = CreateTable<MaterialDocxModel>(body, nameof(TestTaskContext.Materials), docxDocumentOptions);
+		body.Append(materialsTable.tableTitle);
+		var materialsTableModels = await context
+			.Materials
+			.Select(e => new MaterialDocxModel { Title = e.Title })
+			.ToListAsync(cancellationToken);
+
+		FillTable(materialsTable.table, materialsTableModels, docxDocumentOptions);
+		body.Append(materialsTable.table);
+
+		var productsTable = CreateTable<ProductDocxModel>(body, nameof(TestTaskContext.Products), docxDocumentOptions);
+		body.Append(productsTable.tableTitle);
+		var productsTableModels = await context
+			.Products
+			.Include(e => e.ElementsUsed)
+			.ThenInclude(e => e.Nomenclature)
+			.Select(e => new ProductDocxModel 
+			{ 
+				Title = e.Title, 
+				ElementsUsed = string.Join($",{Environment.NewLine}", e.ElementsUsed.Select(i => i.Nomenclature.Title))
+			})
+			.ToListAsync(cancellationToken);
+
+		FillTable(productsTable.table, productsTableModels, docxDocumentOptions);
+		body.Append(productsTable.table);
+
+		var waybillsTable = CreateTable<WaybillDocxModel>(body, nameof(TestTaskContext.Waybills), docxDocumentOptions);
+		body.Append(waybillsTable.tableTitle);
+
+		var waybillsTableModels = await context
+			.Waybills
+			.Include(e => e.PurchaseItems)
+			.ThenInclude(e => e.Nomenclature)
+			.Select(e => new WaybillDocxModel
+			{
+				Id = e.Id.ToString(),
+				PurchaseCost = e.PurchaseCost.ToString(),
+				PurchaseDate = e.PurchaseDate.ToString(),
+				PurchaseItems = string.Join($",{Environment.NewLine}", e.PurchaseItems.Select(e => e.Nomenclature.Title)),
+			})
+			.ToListAsync(cancellationToken);
+
+		FillTable(waybillsTable.table, waybillsTableModels, docxDocumentOptions);
+		body.Append(waybillsTable.table);
+
+		document.Append(body);
+	}
+
+	private static (Table table, Paragraph tableTitle) CreateTable<T>(Body body, string tableTitle, DocxDocumentOptions docxDocumentOptions) where T : class
+	{
+		var titleParagraph = new Paragraph();
+		var titleRun = new Run(new Text(tableTitle))
+		{
+			RunProperties = new RunProperties
+			{
+				RunFonts = new RunFonts
+				{
+					Ascii = docxDocumentOptions.DocumentFontFamily,
+				},
+				FontSize = new FontSize { Val = "36" }
+			}
+		};
+		titleParagraph.Append(titleRun);
+		titleParagraph.ParagraphProperties = new ParagraphProperties(new Justification() { Val = JustificationValues.Center });
+
+		Table table = new();
+		var type = typeof(T);
+		var columnsTitles = type.GetProperties().Select(e => e.Name);
+
+		var headerRow = new TableRow();
+		foreach (var item in columnsTitles)
+        {
+			headerRow.Append(CreateTableCell(item, docxDocumentOptions));
+		}
+		table.Append(headerRow);
+
+		return (table, titleParagraph);
+	}
+
+	private static void FillTable<T>(Table table, IEnumerable<T> itemsToFill, DocxDocumentOptions docxDocumentOptions)
+	{
+		var itemsType = typeof(T);
+		foreach (var item in itemsToFill)
+		{
+			TableRow dataRow = new();
+            foreach (var property in itemsType.GetProperties())
+            {
+                object? value = property.GetValue(item);
+				dataRow.Append(CreateTableCell(value as string, docxDocumentOptions));
+            }
+            table.Append(dataRow);
+		}
+	}
+
+	private static TableCell CreateTableCell(string text, DocxDocumentOptions docxDocumentOptions)
+	{
+		var cell = new TableCell(new Paragraph(new Run(new Text(text)) { RunProperties = new RunProperties 
+		{ RunFonts = new RunFonts { Ascii = docxDocumentOptions.DocumentFontFamily }, FontSize = new FontSize { Val = docxDocumentOptions.DocumentFontSize.ToString() } } }))
+		{
+			TableCellProperties = new TableCellProperties(
+			new TableCellWidth() { Type = TableWidthUnitValues.Dxa, Width = "2400" },
+			new TableCellBorders(
+				new TopBorder() { Val = BorderValues.Single, Size = 8, Color = "000000" },
+				new BottomBorder() { Val = BorderValues.Single, Size = 8, Color = "000000" },
+				new LeftBorder() { Val = BorderValues.Single, Size = 8, Color = "000000" },
+				new RightBorder() { Val = BorderValues.Single, Size = 8, Color = "000000" }
+			)
+		)};
+
+
+		cell.TableCellProperties.Append(new TableCellMargin() 
+		{ 
+			LeftMargin = new LeftMargin() 
+			{ 
+				Width = "100" 
+			} 
+		});
+		return cell;
+	}
+}
+
+public class DocxDocumentOptions
+{
+	public required string DocumentFontFamily { get; init; }
+
+	public required int DocumentFontSize { get; init; }
 }
